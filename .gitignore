@@ -1,0 +1,5 @@
+aurora/proj*/*
+aurora/.Xil
+aurora/*.jou
+aurora/*.log
+aurora/*.str
