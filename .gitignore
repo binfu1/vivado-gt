@@ -3,3 +3,9 @@ aurora/.Xil
 aurora/*.jou
 aurora/*.log
 aurora/*.str
+
+cmac/proj*/*
+cmac/.Xil
+cmac/*.jou
+cmac/*.log
+cmac/*.str

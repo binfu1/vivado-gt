@@ -1,14 +1,6 @@
 `timescale 1 ns / 10 ps
-`define SYNTH
-//`define SIM
 
 module top ( 
-`ifdef SIM
-  input         RESET,
-  input         PMA_INIT,
-  input   [2:0] loopback,
-  input         start,
-`endif  
   input         INIT_CLK,
   input         GTYQ0_P,
   input         GTYQ0_N,
@@ -21,25 +13,23 @@ module top (
 wire        HARD_ERR;
 wire        SOFT_ERR;
 wire  [0:3] LANE_UP;
-wire        channel_RESETup;
+wire        channel_up;
 
-`ifdef SYNTH
 wire        RESET; //高电平复位
 wire        PMA_INIT; //高电平复位
 wire  [2:0] loopback; //0表示不回环，1、2、3、4表示在不同地方环回
-wire        start;
+wire        start_write; //发送数据启动信号
 // 控制复位和环回
 vio vio_i (
   .clk(INIT_CLK),
   .probe_out0(RESET),
   .probe_out1(PMA_INIT),
   .probe_out2(loopback),
-  .probe_out3(start)
+  .probe_out3(start_write)
 );
-`endif
 
 // 例化aurora4
-wire cmac_clk; //用户逻辑时钟
+wire user_clk; //用户逻辑时钟
 wire rst_send, rst_recv; //send和recv模块复位信号
 //发送数据接口
 wire tx_tvalid, tx_tready, tx_tlast;
@@ -64,7 +54,7 @@ aurora_exdes aurora_exdes_i (
   .TXP(TXP),
   .TXN(TXN),
   .loopback_i(loopback),
-  .user_clk_i(cmac_clk),
+  .user_clk_i(user_clk),
   .reset2FrameGen(rst_send),
   .reset2FrameCheck(rst_recv),
   .tx_tvalid_i(tx_tvalid),
@@ -79,7 +69,6 @@ aurora_exdes aurora_exdes_i (
 );
 wire rst_sys = RESET || (!channel_up); //复位信号
 
-`ifdef SYNTH
 // 频率监控
 wire gt_refclk_update;
 wire [31:0] gt_refclk_freq_value;
@@ -87,7 +76,7 @@ frequency_counter #(
   .RefClk_Frequency_g   (100000000)
 ) frequency_counter_i(
   .i_RefClk_p           (INIT_CLK),
-  .i_Clock_p            (cmac_clk),
+  .i_Clock_p            (user_clk),
   .o_Frequency_Update_p (gt_refclk_update),
   .ov32_Frequency_p     (gt_refclk_freq_value)
 );
@@ -102,12 +91,11 @@ ila_status ila_status_i (
   .probe4(gt_refclk_update),
   .probe5(gt_refclk_freq_value)
 );
-`endif
 
 // 发送数据模块
 data_send data_send_i (
-  .start_write(start),
-  .axis_aclk(cmac_clk),
+  .start_write(start_write),
+  .axis_aclk(user_clk),
   .axis_aresetn(!rst_send),
   .axis_tready(tx_tready),
   .axis_tvalid(tx_tvalid),
@@ -116,12 +104,11 @@ data_send data_send_i (
   .axis_tlast(tx_tlast)
 );
 
-`ifdef SYNTH
 // 数据监控
 ila_data ila_data_i (
-  .clk(cmac_clk),
+  .clk(user_clk),
   .probe0(rst_send),
-  .probe1(start),
+  .probe1(start_write),
   .probe2(tx_tready),
   .probe3(tx_tvalid),
   .probe4(tx_tdata),
@@ -132,6 +119,5 @@ ila_data ila_data_i (
   .probe9(rx_tkeep),
   .probe10(rx_tlast)
 );
-`endif
 
 endmodule

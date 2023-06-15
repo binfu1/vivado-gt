@@ -22,4 +22,6 @@ set_property -dict [list \
   CONFIG.C_GT_LOC_3 {3} \
   CONFIG.C_GT_LOC_2 {2} \
   CONFIG.SupportLevel {1} \
+  CONFIG.C_LINE_RATE {25.78125} \
+
 ] [get_ips aurora_64b66b]
