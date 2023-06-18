@@ -24,10 +24,10 @@ source ${srcDir}/tcl/ila.tcl
 add_files -fileset constrs_1 -norecurse ${xdcDir}/top.xdc
 
 ## synth
-#launch_runs synth_1 -jobs 20
-#wait_on_run synth_1
-## impl
-#launch_runs impl_1 -jobs 20
-#wait_on_run impl_1
-## generate bitstream
-#launch_runs impl_1 -to_step write_bitstream -jobs 20
+launch_runs synth_1 -jobs 20
+wait_on_run synth_1
+# impl
+launch_runs impl_1 -jobs 20
+wait_on_run impl_1
+# generate bitstream
+launch_runs impl_1 -to_step write_bitstream -jobs 20
